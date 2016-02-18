@@ -23,7 +23,11 @@ def get_groups(pat, inputs):
 
 def get_files(path='.'):
     """Get all file names from a given path"""
-    return [x.name for x in os.scandir(path) if x.is_file()]
+    try:
+        out = [x.name for x in os.scandir(path) if x.is_file()]
+    except AttributeError:
+        out = [x for x in os.listdir(path) if os.path.isfile(x)]
+    return out
 
 
 def move_files(groups, files, filedir='.', head_dir='.', copy=False, verbosity=1):
