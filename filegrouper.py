@@ -26,7 +26,7 @@ def get_files(path='.'):
     try:
         out = [x.name for x in os.scandir(path) if x.is_file()]
     except AttributeError:
-        out = [x for x in os.listdir(path) if os.path.isfile(x)]
+        out = [x for x in os.listdir(path) if os.path.isfile(os.path.join(path, x))]
     return out
 
 
@@ -113,7 +113,7 @@ def cli(source, target, pattern, copy, verbosity):
     
     Put together :
 
-    ^/d{5}.+/d{5} : 5 digits, then 1 or more of any character,\n
+    ^\d{5}.+\d{5} : 5 digits, then 1 or more of any character,\n
         then 5 more digits.
 
     """
