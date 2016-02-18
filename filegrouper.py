@@ -30,14 +30,14 @@ def get_files(path='.'):
     return out
 
 
-def move_files(groups, files, filedir='.', head_dir='.', copy=False, verbosity=1, dry=False):
+def move_files(groups, files, filedir='.', head_dir='.', copy=False, verbosity=1, dry=False, log='-'):
     """
     Move files to new directory.
     Create directory if does not exist.
     """
     for group in groups:
         if verbosity:
-            click.echo('\nGroup {} \n{}\n'.format(group, '-'*9))
+            click.echo('\nGroup {} \n{}\n'.format(group, '-'*9), file=log)
         p = re.compile(group)
         target_dir = os.path.join(head_dir, group)
         if not os.path.isdir(target_dir) and not dry:
@@ -48,7 +48,9 @@ def move_files(groups, files, filedir='.', head_dir='.', copy=False, verbosity=1
         for target in targets:
             if verbosity:
                 click.echo('{} -> {}'.format(click.format_filename(target[0]),
-                                             click.format_filename(target[1]))
+                                             click.format_filename(target[1]),
+                                             ), file=log
+                                             
                 )
 
             if copy and not dry:
@@ -56,7 +58,7 @@ def move_files(groups, files, filedir='.', head_dir='.', copy=False, verbosity=1
             elif not copy and not dry:
                 shutil.move(target[0], target[1])
     if dry:
-        click.echo('\nDry run, no files actually moved/copied')
+        click.echo('\nDry run, no files actually moved/copied.', file=log)
     return
 
 
@@ -67,12 +69,11 @@ def move_files(groups, files, filedir='.', head_dir='.', copy=False, verbosity=1
               help='Toggle verbose/quiet.')
 @click.option('-d', '--dry', is_flag=True,
               help='Group and show all files without actually moving anything')
-#@click.option('-l', '--log', type=str, default='-',
-#              help='Path to a verbose log output.')
 @click.argument('source', type=click.Path(exists=True))
 @click.argument('target', type=click.Path(exists=True))
 @click.argument('pattern', type=str)
-def cli(source, target, pattern, copy, verbosity, dry,):
+@click.argument('log', type=click.File('w'), default='-', required=False)
+def cli(source, target, pattern, copy, verbosity, dry, log):
     """CLI for sorting files from one folder into individual 
     folders for files with similar names.
 
@@ -88,7 +89,7 @@ def cli(source, target, pattern, copy, verbosity, dry,):
     PATTERN : regular expression pattern for grouping files\n
         (enclose this in quotation marks)
 
-
+    [LOG] : (optional) Filename to send verbose log.
     ---------
 
     Example to group all files based on first 5 letters:\n
@@ -123,7 +124,7 @@ def cli(source, target, pattern, copy, verbosity, dry,):
 
     """
     if copy and verbosity:
-        click.echo('Copying files instead of moving.')
+        click.echo('Copying files instead of moving.', file=log)
 
     files = get_files(source)
     groups = get_groups(pattern, files)
@@ -131,6 +132,6 @@ def cli(source, target, pattern, copy, verbosity, dry,):
         click.echo('No file groups found!')
         sys.exit(0)
     if verbosity:
-        click.echo('\nHere are all of the found groups:')
-        [click.echo(group) for group in groups]
-    move_files(groups, files, source, target, copy=copy, verbosity=verbosity, dry=dry)
+        click.echo('\nHere are all of the found groups:', file=log)
+        [click.echo(group, file=log) for group in groups]
+    move_files(groups, files, source, target, copy=copy, verbosity=verbosity, dry=dry, log=log)
