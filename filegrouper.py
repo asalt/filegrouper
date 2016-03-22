@@ -70,11 +70,11 @@ def move_files(groups, files, filedir='.', head_dir='.', copy=False, verbosity=1
                                                 ), file=log
                     )
 
-            if copy and not dry:
-                shutil.copy2(target[0], target[1])
-            elif not copy and not dry:
-                shutil.move(target[0], target[1])
-            total_file_size += os.stat(target[0]).st_size
+                if copy and not dry:
+                    shutil.copy2(target[0], target[1])
+                elif not copy and not dry:
+                    shutil.move(target[0], target[1])
+                total_file_size += os.stat(target[0]).st_size
     if dry:
         click.echo('\nDry run, no files actually moved/copied.', file=log)
     converted_file_size = byte_formatter(total_file_size)
