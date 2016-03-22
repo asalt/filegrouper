@@ -35,23 +35,23 @@ def move_files(groups, files, filedir='.', head_dir='.', copy=False, verbosity=1
     Move files to new directory.
     Create directory if does not exist.
     """
-    for group in groups:
-        if verbosity:
-            click.echo('\nGroup {} \n{}\n'.format(group, '-'*9), file=log)
-        p = re.compile(group)
-        target_dir = os.path.join(head_dir, group)
-        if not os.path.isdir(target_dir) and not dry:
-            os.mkdir(target_dir)
-        targets = [(os.path.join(filedir, x), os.path.join(target_dir, x))
-                   for x in files if p.search(x)]
-
-        for target in targets:
+    with click.progressbar(groups, label='Moving files') as groups:
+        for group in groups:
             if verbosity:
-                click.echo('{} -> {}'.format(click.format_filename(target[0]),
-                                             click.format_filename(target[1]),
-                                             ), file=log
-                                             
-                )
+                click.echo('\nGroup {} \n{}\n'.format(group, '-'*9), file=log)
+            p = re.compile(group)
+            target_dir = os.path.join(head_dir, group)
+            if not os.path.isdir(target_dir) and not dry:
+                os.mkdir(target_dir)
+            targets = [(os.path.join(filedir, x), os.path.join(target_dir, x))
+                       for x in files if p.search(x)]
+
+            for target in targets:
+                if verbosity:
+                    click.echo('{} -> {}'.format(click.format_filename(target[0]),
+                                                 click.format_filename(target[1]),
+                                                ), file=log
+                    )
 
             if copy and not dry:
                 shutil.copy2(target[0], target[1])
@@ -74,7 +74,7 @@ def move_files(groups, files, filedir='.', head_dir='.', copy=False, verbosity=1
 @click.argument('pattern', type=str)
 @click.argument('log', type=click.File('w'), default='-', required=False)
 def cli(source, target, pattern, copy, verbosity, dry, log):
-    """CLI for sorting files from one folder into individual 
+    """CLI for sorting files from one folder into individual
     folders for files with similar names.
 
     Parameters\n
@@ -116,7 +116,7 @@ def cli(source, target, pattern, copy, verbosity, dry, log):
     {m,n} : From m to n copies of the preceeding expression
 
     \d : digit
-    
+
     Put together :
 
     ^\d{5}.+\d{5} : 5 digits, then 1 or more of any character,\n
