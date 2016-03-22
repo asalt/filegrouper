@@ -21,7 +21,7 @@ def byte_formatter(b):
         conv = conv/(2**10)
         if conv < 1000:
             return '{:.4f} mB'.format(conv)
-        elif conv < 1000:
+        elif conv > 1000:
             conv = conv/(2**10)
             return '{:.4f} GB'.format(conv)
 
