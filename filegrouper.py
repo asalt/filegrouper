@@ -8,7 +8,23 @@ import re
 import shutil
 import click
 
+__version__ = '1.2'
+__author__ = 'Alex Saltzman'
+
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+
+def byte_formatter(b):
+    conv = b/(2**10)
+    if conv < 1000:
+        return '{:.4f} kB'.format(conv)
+    elif conv > 1000:
+        conv = conv/(2**10)
+        if conv < 1000:
+            return '{:.4f} mB'.format(conv)
+        elif conv < 1000:
+            conv = conv/(2**10)
+            return '{:.4f} GB'.format(conv)
+
 
 def get_groups(pat, inputs):
     """
@@ -35,6 +51,7 @@ def move_files(groups, files, filedir='.', head_dir='.', copy=False, verbosity=1
     Move files to new directory.
     Create directory if does not exist.
     """
+    total_file_size = 0  # calculate total file size
     with click.progressbar(groups, label='Moving files') as groups:
         for group in groups:
             if verbosity:
@@ -57,8 +74,11 @@ def move_files(groups, files, filedir='.', head_dir='.', copy=False, verbosity=1
                 shutil.copy2(target[0], target[1])
             elif not copy and not dry:
                 shutil.move(target[0], target[1])
+            total_file_size += os.stat(target[0]).st_size
     if dry:
         click.echo('\nDry run, no files actually moved/copied.', file=log)
+    converted_file_size = byte_formatter(total_file_size)
+    click.echo('Total file size : {}'.format(converted_file_size), file=log)
     return
 
 
