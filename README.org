@@ -1,0 +1,106 @@
+* FileGrouper
+
+CLI for sorting files from one folder into individual
+folders for files with similar names.
+
+** Quickstart
+Say you have a directory with lots of files that looks like this:
+#+BEGIN_EXAMPLE
+12345_1_...raw
+12345_1_...out
+12345_1_...txt
+12346_1_...raw
+12346_1_...out
+12346_1_...txt
+...
+#+END_EXAMPLE
+We can easily sort these files into their own directories like so:
+#+BEGIN_EXAMPLE
+groupfiles SOURCE-DIR TARGET-DIR '\d{5}_\d+' logfile.txt
+#+END_EXAMPLE
+with a regex to group files based on 5 digits, an underscore, then another digit or digits
+which will lead to:
+#+BEGIN_EXAMPLE
+|--- TARGET-DIR
+|    `--- 12345_1
+|         `--- 12345_1_...raw
+|         `--- 12345_1_...out
+|         `--- 12345_1_...txt
+|    `--- 12346_1
+|         `--- 12346_1_...raw
+|         `--- 12346_1_...out
+|         `--- 12346_1_...txt
+#+END_EXAMPLE
+The regex determines the groupings of the files and also the names of the resulting directories.
+Files that don't match the pattern are not moved.
+Directories are created if they do not exist.
+
+It's recommended to first run the command with the ~--dry~ flag to sample the result without moving anything.
+It also outputs the total size of the files to be moved.
+This is useful if transferring files across drives to ensure sufficient storage space.
+
+
+
+#+BEGIN_EXAMPLE
+    Parameters\n
+    ----------
+
+    SOURCE : source directory with files needing to be grouped\n
+        (must exist)
+
+    TARGET : target directory where new folders will be place\n
+        (must exist)
+
+    PATTERN : regular expression pattern for grouping files\n
+        (enclose this in quotation marks)
+
+    LOG : (optional) Filename to send output. Default stdout
+
+
+    ---------
+
+    Example to group all files based on first 5 letters:\n
+
+    $ groupfiles ./junk_folder ./sorted_stuff '^[a-zA-Z]{5}' logfile.txt
+
+    ---------
+
+    Other examples of regular expression patterns that may be useful:
+
+    '^' : (Caret) start your regular expression with this to match\n
+        at start of string
+
+    '.' : (Dot) any character
+
+    '+' : (Plus) one or more repetitions of the preceeding expression
+
+    '*' : (Star) 0 or more repetitions of the preceeding expression
+
+    '?' : 0 or 1 repetitions of the preceeding expression
+
+    {m} : Exactly m copies of the preceeding expression
+
+    {m,n} : From m to n copies of the preceeding expression
+
+    \d : digit
+
+    Put together :
+
+    ^/d{5}.+/d{5} : 5 digits, then 1 or more of any character,\n
+        then 5 more digits.
+
+Options:
+  -c, --copy                     Copy files to new folder instead of moving.
+  -v, --verbosity / -q, --quiet  Toggle verbose/quiet.
+  -d, --dry                      Group and show all files without actually
+                                 moving anything
+  -h, --help                     Show this message and exit.
+
+#+END_EXAMPLE
+
+** Installation
+
+clone repository, activate your virtualenvironment (optional), and execute:
+#+BEGIN_EXAMPLE
+$ python setup.py install
+#+END_EXAMPLE
