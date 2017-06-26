@@ -44,7 +44,15 @@ def get_files(path='.'):
     except AttributeError:
         out = [x for x in os.listdir(path) if os.path.isfile(os.path.join(path, x))]
     return out
-
+def try_move(source, dest, copy, log='-'):
+    """Try to move/copy a file, and make a log of it if it fails"""
+    try:
+        if copy:
+            shutil.copy2(source, dest)
+        elif not copy:
+            shutil.move(source, dest)
+    except PermissionError:
+        click.echo('*** Error moving {}, permission denied'.format(click.format_filename(source)), file=log)
 
 def move_files(groups, files, filedir='.', head_dir='.', copy=False, verbosity=1, dry=False, log='-'):
     """
@@ -70,11 +78,9 @@ def move_files(groups, files, filedir='.', head_dir='.', copy=False, verbosity=1
                                                 ), file=log
                     )
 
-                if copy and not dry:
-                    shutil.copy2(target[0], target[1])
-                elif not copy and not dry:
-                    shutil.move(target[0], target[1])
                 total_file_size += os.stat(target[0]).st_size
+                if not dry:
+                    try_move(target[0], target[1], copy, log)
     if dry:
         click.echo('\nDry run, no files actually moved/copied.', file=log)
     converted_file_size = byte_formatter(total_file_size)
